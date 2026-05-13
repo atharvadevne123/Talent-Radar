@@ -4,9 +4,10 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 import pytest
+from sqlalchemy.pool import StaticPool
 
-from app.features import FEATURE_COLS
 from app.monitoring import detect_drift, set_reference_data
+from app.features import FEATURE_COLS
 
 
 def _make_feature_df(n: int = 200, seed: int = 0) -> pd.DataFrame:
@@ -35,7 +36,6 @@ class TestDriftDetection:
     def test_drift_detected_on_shifted_data(self):
         ref = _make_feature_df(300, seed=10)
         set_reference_data(ref)
-        # shift seniority dramatically
         shifted = _make_feature_df(300, seed=11)
         shifted["seniority_score"] = 7.0
         results = detect_drift(shifted)
@@ -97,8 +97,11 @@ class TestPredictionLogging:
     @pytest.fixture(scope="class")
     def db_engine(self):
         from sqlalchemy import create_engine
-
         from app.database import Base
-        engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False})
+        engine = create_engine(
+            "sqlite:///:memory:",
+            connect_args={"check_same_thread": False},
+            poolclass=StaticPool,
+        )
         Base.metadata.create_all(engine)
         return engine
