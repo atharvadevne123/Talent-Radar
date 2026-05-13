@@ -5,22 +5,52 @@ All notable changes to Talent-Radar are documented here.
 ## [1.0.0] - 2026-05-13
 
 ### Added
-- LightGBM + XGBoost + RandomForest ensemble salary prediction model
-- 7-stage sklearn feature engineering pipeline
+
+#### Core ML
+- LightGBM + XGBoost + RandomForest ensemble salary prediction model (5-fold CV)
+- 7-stage sklearn feature engineering pipeline (SkillScore, Seniority, Location, Industry, ExpPoly, Remote)
 - 5-fold cross-validation with R2 and MAE metrics
-- KS-test drift detection per feature column
-- RAG + FAISS job similarity search (bag-of-skills vectors)
-- FastAPI REST API with versioned endpoints (/api/v1/)
-- Single and batch salary prediction endpoints
-- Drift detection and drift history endpoints
-- On-demand model retraining endpoint
-- SQLAlchemy ORM with JobPosting, PredictionLog, DriftReport models
+- Synthetic training data generator for bootstrapping
+
+#### Monitoring
+- KS-test drift detection per feature column with configurable alpha
+- Salary anomaly detection (Z-score + IQR combined)
+- Skill demand spike detection with shifted rolling baseline
+- Prediction logging to PostgreSQL via SQLAlchemy
+
+#### Intelligence
+- RAG + FAISS bag-of-skills job similarity search
+- Time-series salary trend forecasting (SMA and linear trend)
+- MLflow experiment tracking with metrics, params, and artifact logging
+
+#### API (FastAPI /api/v1/)
+- POST /predict — single job salary prediction
+- POST /predict/batch — batch prediction (max 100)
+- POST /similar — FAISS job similarity search
+- POST /forecast — salary trend forecasting
+- POST /drift/detect — KS-test drift detection
+- GET /drift/history — recent drift reports
+- POST /anomaly/salary — salary anomaly detection
+- POST /train — on-demand model retraining
+- GET /health, /version, /metrics — operational endpoints
+
+#### Infrastructure
+- SQLAlchemy ORM models: JobPosting, PredictionLog, DriftReport
 - PostgreSQL support via docker-compose
-- Automated Airflow retraining DAG (weekly)
-- Correlation ID middleware for request tracing
+- Rate limiting middleware (200 req/min per IP)
+- Correlation ID middleware for distributed tracing
 - CORS middleware
-- Bootstrap model training on startup
-- GitHub Actions CI (lint + test + type-check)
-- Dockerfile and docker-compose.yml
+- Input validation utilities
+- Automated Airflow retraining DAG (weekly)
+- GitHub Actions CI: lint + test + coverage + type-check
+- Dockerfile with non-root user and healthcheck
+- docker-compose.yml with API and PostgreSQL
+
+#### Developer Experience
 - .env.example, pyproject.toml, Makefile, .pre-commit-config.yaml
-- CONTRIBUTING.md, CHANGELOG.md
+- Alembic migration configuration
+- Database seed script
+- Model training CLI script
+- Architecture diagram
+- CONTRIBUTING.md, CHANGELOG.md, SECURITY.md, CODE_OF_CONDUCT.md
+- MIT License
