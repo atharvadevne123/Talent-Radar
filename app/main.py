@@ -193,3 +193,16 @@ def find_similar_jobs(query: SimilarJobQuery) -> dict[str, Any]:
     results = index.search(query.description, top_k=query.top_k)
     return {"results": results, "query": query.description[:100]}
 
+@app.post("/api/v1/anomaly/salary", tags=["monitoring"])
+def detect_salary_anomalies_endpoint(jobs: list[JobInput]) -> dict[str, Any]:
+    """Detect anomalous salary predictions in a batch of job postings."""
+    if not jobs:
+        raise HTTPException(status_code=422, detail="No jobs provided")
+    rows = __import__("pandas").DataFrame([j.model_dump() for j in jobs])
+    features = prepare_features(rows)
+    from app.model import predict
+    salaries = predict(features)
+    from app.anomaly import detect_salary_anomalies
+    result = detect_salary_anomalies(salaries)
+    return {"anomaly_report": result, "total_jobs": len(jobs)}
+
