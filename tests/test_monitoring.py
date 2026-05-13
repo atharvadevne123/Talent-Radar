@@ -6,8 +6,8 @@ import pandas as pd
 import pytest
 from sqlalchemy.pool import StaticPool
 
-from app.monitoring import detect_drift, set_reference_data
 from app.features import FEATURE_COLS
+from app.monitoring import detect_drift, set_reference_data
 
 
 def _make_feature_df(n: int = 200, seed: int = 0) -> pd.DataFrame:
@@ -97,6 +97,7 @@ class TestPredictionLogging:
     @pytest.fixture(scope="class")
     def db_engine(self):
         from sqlalchemy import create_engine
+
         from app.database import Base
         engine = create_engine(
             "sqlite:///:memory:",
