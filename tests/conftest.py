@@ -8,16 +8,22 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 
 os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")
 os.environ.setdefault("MODEL_PATH", "/tmp/test_talent_radar.pkl")
 
+_TEST_ENGINE_KWARGS = dict(
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool,
+)
+
 
 @pytest.fixture(scope="session")
 def db_engine():
-    """Create an in-memory SQLite engine for tests."""
+    """Create a shared in-memory SQLite engine for tests."""
     from app.database import Base
-    engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False})
+    engine = create_engine("sqlite:///:memory:", **_TEST_ENGINE_KWARGS)
     Base.metadata.create_all(engine)
     return engine
 
@@ -36,10 +42,10 @@ def db_session(db_engine):
 
 @pytest.fixture(scope="session")
 def client():
-    """Return a FastAPI TestClient with a seeded in-memory DB."""
+    """Return a FastAPI TestClient backed by a shared in-memory SQLite DB."""
     from app.database import Base, get_db
     from app.main import app
-    engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False})
+    engine = create_engine("sqlite:///:memory:", **_TEST_ENGINE_KWARGS)
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
 
