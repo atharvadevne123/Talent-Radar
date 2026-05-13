@@ -206,3 +206,16 @@ def detect_salary_anomalies_endpoint(jobs: list[JobInput]) -> dict[str, Any]:
     result = detect_salary_anomalies(salaries)
     return {"anomaly_report": result, "total_jobs": len(jobs)}
 
+class ForecastInput(BaseModel):
+    """Input for salary trend forecasting."""
+    historical_salaries: list[float] = Field(..., min_length=2)
+    method: str = Field("sma", description="sma or linear")
+    steps_ahead: int = Field(4, ge=1, le=24)
+
+
+@app.post("/api/v1/forecast", tags=["prediction"])
+def forecast_salary_trend_endpoint(payload: ForecastInput) -> dict[str, Any]:
+    """Forecast salary trends using historical data."""
+    from app.forecasting import forecast_salary_trend
+    return forecast_salary_trend(payload.historical_salaries, method=payload.method, steps_ahead=payload.steps_ahead)
+
