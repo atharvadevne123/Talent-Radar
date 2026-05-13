@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import pytest
+
 from app.validation import sanitize_title, validate_job_input
 
 
