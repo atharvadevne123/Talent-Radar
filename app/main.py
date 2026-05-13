@@ -184,3 +184,12 @@ def trigger_training() -> dict[str, Any]:
     except Exception as exc:
         logger.exception("Training error")
         raise HTTPException(status_code=500, detail="Training failed") from exc
+
+@app.post("/api/v1/similar", tags=["search"])
+def find_similar_jobs(query: SimilarJobQuery) -> dict[str, Any]:
+    """Find similar jobs using FAISS vector search."""
+    from app.rag import FAISSJobIndex
+    index = FAISSJobIndex()
+    results = index.search(query.description, top_k=query.top_k)
+    return {"results": results, "query": query.description[:100]}
+
